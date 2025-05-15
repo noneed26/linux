@@ -1,52 +1,71 @@
 #include <iostream>
 #include <vector>
 using namespace std;
-bool isSafe(int row, int col, vector<string> &board, int n)
-{
-    // Check column
-    for (int i = 0; i < row; i++)
-        if (board[i][col] == 'Q')
-            return false;
-    // Check upper-left diagonal
-    for (int i = row - 1, j = col - 1; i >= 0 && j >= 0; i--, j--)
-        if (board[i][j] == 'Q')
-            return false;
-    // Check upper-right diagonal
-    for (int i = row - 1, j = col + 1; i >= 0 && j < n; i--, j++)
-        if (board[i][j] == 'Q')
-            return false;
-    return true;
-}
-bool solve(int row, vector<string> &board, int n)
-{
-    if (row == n)
-    {
-        // Print the board
-        for (int i = 0; i < n; i++)
-            cout << board[i] << endl;
+
+class Solution {
+public:
+    bool isSafe(int node, int color[], vector<vector<int>> &graph, int n, int col) {
+        for (int i = 0; i < n; i++) {
+            if (graph[node][i] == 1 && color[i] == col) {
+                return false;
+            }
+        }
         return true;
     }
-    for (int col = 0; col < n; col++)
-    {
-        if (isSafe(row, col, board, n))
-        {
-            board[row][col] = 'Q';
-            if (solve(row + 1, board, n))
-                return true;
-            board[row][col] = '.'; // Backtrack
+
+    bool solve(int node, int color[], int m, int n, vector<vector<int>> &graph) {
+        if (node == n) return true;
+
+        for (int i = 1; i <= m; i++) {
+            if (isSafe(node, color, graph, n, i)) {
+                color[node] = i;
+                if (solve(node + 1, color, m, n, graph)) return true;
+                color[node] = 0; // backtrack
+            }
         }
+        return false;
     }
-    return false;
-}
-int main()
-{
-    int n;
-    cout << "Enter number of queens (N): ";
-    cin >> n;
-    vector<string> board(n, string(n, '.'));
-    if (!solve(0, board, n))
-    {
-        cout << "No solution exists.\n";
+
+    bool graphColoring(int v, vector<pair<int, int>> &edges, int m, int color[]) {
+        vector<vector<int>> graph(v, vector<int>(v, 0));
+        for (auto &edge : edges) {
+            graph[edge.first][edge.second] = 1;
+            graph[edge.second][edge.first] = 1;
+        }
+        return solve(0, color, m, v, graph);
     }
+};
+
+int main() {
+    int v, e, m;
+    cout << "Enter number of vertices: ";
+    cin >> v;
+    cout << "Enter number of edges: ";
+    cin >> e;
+
+    vector<pair<int, int>> edges;
+    cout << "Enter the edges (0-based index):\n";
+    for (int i = 0; i < e; i++) {
+        int u, v2;
+        cin >> u >> v2;
+        edges.push_back({u, v2});
+    }
+
+    cout << "Enter number of colors: ";
+    cin >> m;
+
+    Solution sol;
+    int color[100] = {0}; // Assuming max 100 vertices
+
+    if (sol.graphColoring(v, edges, m, color)) {
+        cout << "Graph can be colored with " << m << " colors.\n";
+        cout << "Color assignment:\n";
+        for (int i = 0; i < v; i++) {
+            cout << "Vertex " << i << " ---> Color " << color[i] << "\n";
+        }
+    } else {
+        cout << "Graph cannot be colored with " << m << " colors.\n";
+    }
+
     return 0;
 }
